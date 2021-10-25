@@ -6,7 +6,7 @@ This is a simple Django 3.0+ api for a simple discussion application.
 
 The API clients can :
 1. Create a post
-2. Get a list of posts ordered by date of creation, information about the count of likes.
+2. Get a list of posts ordered by date of creation with information about the count of likes.
 3. Edit a post created by the authenticated user.
 4. Delete a post created by the authenticated user.
 5. Like another user's post.
