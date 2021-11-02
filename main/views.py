@@ -1,5 +1,5 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, schema
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import BasicAuthentication, SessionAuthentication
@@ -7,6 +7,9 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from .models import Post
 from .serializers import PostSerializer
 from drf_yasg.utils import swagger_auto_schema
+
+
+OWNER_ONLY_METHODS = ['PUT', 'PATCH', 'DELETE']
 
 
 @swagger_auto_schema(methods=['POST'], request_body=PostSerializer())
@@ -28,16 +31,22 @@ def posts(request):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+        
 @swagger_auto_schema(methods=['PATCH', 'DELETE'], request_body=PostSerializer())
 @api_view(['GET', 'PATCH', 'DELETE'])
 @authentication_classes([BasicAuthentication, SessionAuthentication])
 @permission_classes([IsAuthenticatedOrReadOnly])
 def post_detail(request, post_id):
+    
     try:
         post = Post.objects.get(id=post_id, is_active=True)
     except Post.DoesNotExist:
         return Response({'error':"Post with this ID does not exist"}, status=status.HTTP_404_NOT_FOUND)
     
+    if request.method in OWNER_ONLY_METHODS and post.user != request.user:
+        raise PermissionDenied(detail="You do not have the permission to edit or delete this post as it does not belong to you")
+
+
     if request.method == 'GET':
         
         serializer = PostSerializer(post)
