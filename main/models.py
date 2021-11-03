@@ -9,6 +9,7 @@ class Post(models.Model):
     title = models.CharField(max_length=360)
     body = models.TextField()
     likes = models.PositiveIntegerField(default=0)
+    likers = models.ManyToManyField(User, blank=True, related_name='likers')
     date_created = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     

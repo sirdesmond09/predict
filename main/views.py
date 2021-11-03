@@ -78,7 +78,11 @@ def like_post(request, post_id):
         return Response({'error':"Post with this ID does not exist"}, status=status.HTTP_404_NOT_FOUND)
     
     if request.method == 'GET':
-        post.likes+=1
-        post.save()
+        if request.user in post.likers.all():
+            raise PermissionDenied(detail="You cannot like this post more than once.")
+        else:
+            post.likers.add(request.user)
+            post.likes+=1
+            post.save()
         return Response({'message':'Liked succesful'}, status=status.HTTP_200_OK)
     
